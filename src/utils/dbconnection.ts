@@ -7,5 +7,5 @@ export function connectDB() { // ✅ No redeclaration
             .catch((err) => console.log(err.message));
     } else {
         console.error("DB_URL is not defined");
-    }
+    } 
 }
