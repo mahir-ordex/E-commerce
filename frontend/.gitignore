@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+assert
+assert/react.svg
+
+
 
 # Editor directories and files
 .vscode/*
