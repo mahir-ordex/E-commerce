@@ -10,18 +10,18 @@ import {
   ChevronLeft,
   CreditCard,
 } from "lucide-react";
+import axios from "axios";
 
 const Dashboard = () => {
   // Slider state
   const [currentSlide, setCurrentSlide] = useState(0);
   const [SearchInput, setSearchInput] = useState("");
   const [SearchData, setSearchData] = useState<(Products | category)[] >([]);
+  const [categories, setCategories] = useState<category[]>([])
 
   interface category {
     id: number;
     name: string;
-    products: number;
-    image: string;
   }
   interface Products{
     id?: number;
@@ -33,37 +33,20 @@ const Dashboard = () => {
     rating?: number;
     discount?: number;
   }
+  
+  const fetchCategories = async()=>{
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/categories`)
+      setCategories(res.data)
+      console.log(res)
+    } catch (error:any) {
+      console.error(error.message)      
+    }
+  }
 
-
-  // Sample data for categories and featured products
-  const categories:category[] = [
-    {
-      id: 1,
-      name: "Electronics",
-      products: 120,
-      image: "/api/placeholder/80/80",
-    },
-    { id: 2, name: "Clothing", products: 85, image: "/api/placeholder/80/80" },
-    {
-      id: 3,
-      name: "Home & Kitchen",
-      products: 64,
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: 4,
-      name: "Beauty & Personal Care",
-      products: 42,
-      image: "/api/placeholder/80/80",
-    },
-    {
-      id: 5,
-      name: "Sports & Outdoors",
-      products: 37,
-      image: "/api/placeholder/80/80",
-    },
-    { id: 6, name: "Books", products: 93, image: "/api/placeholder/80/80" },
-  ];
+  useEffect(()=>{
+    fetchCategories()
+  },[])
 
   const featuredProducts:Products[] = [
     {
@@ -187,9 +170,6 @@ const Dashboard = () => {
       prev === 0 ? sliderProducts.length - 1 : prev - 1
     );
   };
-  setInterval(() => {
-    nextSlide();
-  }, 3000);
 
   const handleSearch = () => {
     setSearchData(
@@ -204,9 +184,9 @@ const Dashboard = () => {
   },[SearchInput])
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm sticky  top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="text-xl font-bold text-indigo-600">ShopNow</div>
@@ -369,7 +349,7 @@ const Dashboard = () => {
                   key={product?.id}
                   className={`absolute top-0 left-0 w-full h-full transition-opacity duration-500 ${
                     index === currentSlide
-                      ? "opacity-100 z-10"
+                      ? "opacity-100 z-0"
                       : "opacity-0 z-0"
                   }`}
                 >
@@ -506,17 +486,7 @@ const Dashboard = () => {
                 className="bg-white rounded-lg shadow hover:shadow-md transition p-4"
               >
                 <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 bg-gray-200 rounded-full mb-3 overflow-hidden">
-                    <img
-                      src={category?.image}
-                      alt={category?.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
                   <h3 className="font-medium text-gray-800">{category.name}</h3>
-                  <p className="text-xs text-gray-500">
-                    {category?.products} products
-                  </p>
                 </div>
               </div>
             ))}
