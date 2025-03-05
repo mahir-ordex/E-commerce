@@ -5,14 +5,14 @@ import cors from 'cors';
 import dotenv from "dotenv";
 
 //importing all route
-import userRouter from './routes/user.route';
-import categoryRouter from "./routes/category.route";
-import productRouter from './routes/product.route';
+import userRoutes from './routes/user.route';
+import categoryRoutes from "./routes/category.route";
+import productRoutes from './routes/product.route';
 import Seller from "./models/sellerModel";
 import User from "./models/userModel";
-// import cartRouter from './routes/cart.route';
+import { cartRoutes } from "./routes/cart.route";
 // import sellerRouter from './routes/seller.route';
-// import categoryRouter from './routes/category.route';
+// import categoryRoutes from './routes/category.route';
 
 dotenv.config();
 const app = express();
@@ -29,9 +29,10 @@ app.use(express.json());
 
 // using routes
 
-app.use('/api/user', userRouter);
-app.use('/api/products', productRouter);
-app.use('/api',categoryRouter);
+app.use('/api/user', userRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api',categoryRoutes);
+app.use('/api/cart',cartRoutes);
 
 app.listen(process.env.PORT || 5000, () => {
     console.log(`Server is running on port ${process.env.PORT}`);

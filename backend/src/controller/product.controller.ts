@@ -1,11 +1,8 @@
 import { Request, Response } from "express";
+import {AuthenticatedRequest} from '../types/cart.controller.types'
 import Product from "../models/productModel";
 import Seller from "../models/sellerModel";
 import cloudinary from "cloudinary";
-
-interface AuthenticatedRequest extends Request {
-  user?: { _id: string };
-}
 
 export const getAllProducts = async (
   req: Request,
@@ -35,10 +32,7 @@ export const getProductById = async (
   }
 };
 
-export const createProduct = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
+export const createProduct = async (req: AuthenticatedRequest,res: Response): Promise<void> => {
   try {
     const { name, description, price, category, image, quantity } = req.body;
     if (!name || !description || !price || !category || !image || !quantity) {
@@ -51,7 +45,7 @@ export const createProduct = async (
       return;
     }
 
-    const sellerShop = await Seller.findOne({ ownerId: req.user._id });
+    const sellerShop = await Seller.findOne({ ownerId: req.user.id });
     if (!sellerShop) {
       res.status(404).json({ message: "Seller shop not found" });
       return;
@@ -92,10 +86,7 @@ export const createProduct = async (
   }
 };
 
-export const updateProduct = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
+export const updateProduct = async (req: AuthenticatedRequest,res: Response): Promise<void> => {
   try {
     const { id: productId } = req.params;
     const updateDetail = req.body;
@@ -110,7 +101,7 @@ export const updateProduct = async (
       return;
     }
 
-    const sellerShop = await Seller.findOne({ ownerId: req.user._id });
+    const sellerShop = await Seller.findOne({ ownerId: req.user.id });
     if (!sellerShop) {
       res.status(404).json({ message: "Seller shop not found" });
       return;
@@ -133,7 +124,7 @@ export const updateProduct = async (
 
     const product = await Product.findOne({
       _id: productId,
-      sellerId: req.user._id,
+      sellerId: req.user.id,
     });
 
     if (!product) {
@@ -155,10 +146,7 @@ export const updateProduct = async (
   }
 };
 
-export const deleteProduct = async (
-  req: AuthenticatedRequest,
-  res: Response
-): Promise<void> => {
+export const deleteProduct = async (req: AuthenticatedRequest,res: Response): Promise<void> => {
   const { id: productId } = req.params;
   if (!productId) {
     res.status(400).json({ message: "Product ID is required" });
