@@ -39,16 +39,12 @@ const sellerSchema: Schema = new mongoose.Schema(
                 default: []
             }
         ],
-        isVerified: {
-            type: Boolean,
-            default: false
-        },
-        ratings: {
+        ratings:[ {
             type: Number,
             default: 0,
             min: 0,
             max: 5
-        },
+        }],
     },
     { timestamps: true }
 );
