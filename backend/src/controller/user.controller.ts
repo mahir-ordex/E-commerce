@@ -64,8 +64,8 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
           name: newUser.name,
           email: newUser.email,
           role: newUser.role,
-          accessToken,
         },
+        accessToken,
       });
   } catch (error) {
     console.error("Error in signUp:", error);
@@ -79,15 +79,18 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(400).json({ msg: "User not found" });
-      return;
+      res.status(404).json({ msg: "User not found" });
+      return 
     }
 
-    if (!(await bcrypt.compare(password, user.password))) {
-      res.status(400).json({ msg: "Invalid credentials" });
-      return;
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      res.status(401).json({ msg: "Invalid credentials" });
+      return 
     }
 
+    // Generate tokens
     const refreshToken = JWT.sign(
       { id: user._id, role: user.role },
       JWT_SECRET,
@@ -99,7 +102,15 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
       { expiresIn: "7d" }
     );
 
+    // Store refresh token in the database
     user.refreshToken = refreshToken;
+
+    // Check if it's the first login
+    const isFirstLogin = user.firstLogin;
+    if (isFirstLogin) {
+      user.firstLogin = false; // Update firstLogin to false
+    }
+
     await user.save();
 
     res
@@ -113,14 +124,16 @@ export const signIn = async (req: Request, res: Response): Promise<void> => {
           name: user.name,
           email: user.email,
           role: user.role,
-          accessToken,
+          isFirstLogin,
         },
+        accessToken,
       });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Error in signIn:", err);
     res.status(500).json({ msg: "Server Error" });
   }
 };
+
 
 export const signOut = async (req: Request, res: Response): Promise<void> => {
   res

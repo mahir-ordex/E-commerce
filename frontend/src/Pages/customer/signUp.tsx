@@ -1,5 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setToken, setUser } from "../../store/authSlice";
 
 const SignUp: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -12,10 +15,11 @@ const SignUp: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    //    console.log(name, value);
 
     setFormData((prevFormData) => {
       const updatedFormData = {
@@ -47,23 +51,19 @@ const SignUp: React.FC = () => {
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
     }
-
     if (!formData.lastName.trim()) {
       newErrors.lastName = "Last name is required";
     }
-
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email is invalid";
     }
-
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
-
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
@@ -83,7 +83,14 @@ const SignUp: React.FC = () => {
       );
 
       if (res.status === 200) {
-        
+        let token:string | undefined = res.data?.accessToken;;
+
+        if (!token) {
+          throw new Error("Access token missing in response!");
+        }
+        dispatch(setUser(res.data)); 
+        dispatch(setToken(token));
+        navigate("/")
       }
     }
   };
@@ -92,18 +99,19 @@ const SignUp: React.FC = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <a
-              href="/signin"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Sign in
-            </a>
-          </p>
+          <Link to={"/signup"}>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Create your account
+            </h2>
+          </Link>
+          <Link
+            to={"/signin"}
+            className="font-medium text-indigo-600 hover:text-indigo-500"
+          >
+            <p className="mt-2 text-center text-sm text-gray-600">
+              Already have an account?
+            </p>
+          </Link>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
@@ -234,7 +242,7 @@ const SignUp: React.FC = () => {
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Create Account
+              <Link to={"/"}>Create Account</Link>
             </button>
           </div>
         </form>

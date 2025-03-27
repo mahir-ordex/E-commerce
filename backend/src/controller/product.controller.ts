@@ -32,10 +32,11 @@ export const getProductById = async (
   }
 };
 
-export const createProduct = async (req: AuthenticatedRequest,res: Response): Promise<void> => {
+export const createProduct = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { name, description, price, category, image, quantity } = req.body;
-    if (!name || !description || !price || !category || !image || !quantity) {
+
+    if (!name || !description || !price || !category || !quantity) {
       res.status(400).json({ message: "All fields are required" });
       return;
     }
@@ -51,40 +52,45 @@ export const createProduct = async (req: AuthenticatedRequest,res: Response): Pr
       return;
     }
 
-    const uploadedImages = await Promise.all(
-      image.map(async (img: string) => {
-        const cloudinaryResult = await cloudinary.v2.uploader.upload(img, {
-          folder: "ecommerce/products",
-          width: 1200,
-          height: 1200,
-          crop: "limit",
-        });
-        return cloudinaryResult.secure_url;
-      })
-    );
+    let uploadedImages: string[] = []; // Initialize empty array
+
+    // Upload images only if they exist
+    if (image && Array.isArray(image) && image.length > 0) {
+      uploadedImages = await Promise.all(
+        image.map(async (img: string) => {
+          const cloudinaryResult = await cloudinary.v2.uploader.upload(img, {
+            folder: "ecommerce/products",
+            width: 1200,
+            height: 1200,
+            crop: "limit",
+          });
+          return cloudinaryResult.secure_url;
+        })
+      );
+    }
 
     const newProduct = new Product({
       name,
       description,
       price,
       category,
-      image: uploadedImages,
+      image: uploadedImages.length > 0 ? uploadedImages : undefined, // Assign only if images exist
       quantity,
       shopId: sellerShop._id,
     });
 
     await newProduct.save();
 
-    res
-      .status(201)
-      .json({ message: "Product created successfully", product: newProduct });
+    res.status(201).json({
+      message: "Product created successfully",
+      product: newProduct,
+    });
   } catch (error: any) {
     console.error("Error creating product:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
+
 
 export const updateProduct = async (req: AuthenticatedRequest,res: Response): Promise<void> => {
   try {
@@ -107,9 +113,9 @@ export const updateProduct = async (req: AuthenticatedRequest,res: Response): Pr
       return;
     }
 
-    if (updateDetail.image) {
-      const uploadedImages = await Promise.all(
-        updateDetail.image.map(async (img: string) => {
+    if (updateDetail?.image) {
+      const uploadedImages = await Promise?.all(
+        updateDetail?.image?.map(async (img: string) => {
           const cloudinaryResult = await cloudinary.v2.uploader.upload(img, {
             folder: "ecommerce/products",
             width: 1200,

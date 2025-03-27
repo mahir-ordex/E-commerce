@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 import { Link,useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setToken, setUser } from "../../store/authSlice";
 
 const SignIn: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +11,7 @@ const SignIn: React.FC = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -17,7 +20,7 @@ const SignIn: React.FC = () => {
       setErrors({ ...errors, [name]: "" });
     }
   };
-
+  
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.email.trim()) {
@@ -31,22 +34,34 @@ const SignIn: React.FC = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
+  
+    if (!validateForm()) return;
+    try {
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/api/user/signin`,
         formData,
         { withCredentials: true }
       );
-      if (res.status === 200) {
-        console.log("User signed in");
-        navigate("/");
+  
+      // console.log("Response Data:", res.data); // 🔍 Debugging Step
+  
+      const token: string | undefined = res.data?.accessToken; // ✅ Fix here
+      if (!token) {
+        throw new Error("Access token missing in response!");
       }
+  
+      dispatch(setUser(res.data)); 
+    dispatch(setToken(token));
+  
+      navigate("/");
+    } catch (error: any) {
+      console.error("Login Error:", error.message);
     }
   };
-
+  
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">

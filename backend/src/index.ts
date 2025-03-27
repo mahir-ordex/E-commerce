@@ -8,15 +8,11 @@ import dotenv from "dotenv";
 import userRoutes from './routes/user.route';
 import categoryRoutes from "./routes/category.route";
 import productRoutes from './routes/product.route';
-import Seller from "./models/sellerModel";
-import User from "./models/userModel";
 import { cartRoutes } from "./routes/cart.route";
-// import sellerRouter from './routes/seller.route';
-// import categoryRoutes from './routes/category.route';
+import { sellerRoutes } from "./routes/seller.route";
 
 dotenv.config();
 const app = express();
-
 
 app.use(cors(
     {
@@ -31,6 +27,7 @@ app.use(express.json());
 
 app.use('/api/user', userRoutes);
 app.use('/api/products', productRoutes);
+app.use("/api/seller",sellerRoutes)
 app.use('/api',categoryRoutes);
 app.use('/api/cart',cartRoutes);
 

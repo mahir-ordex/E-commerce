@@ -9,6 +9,7 @@ export interface IUser extends Document {
   address?: string;
   role: "consumer" | "seller" | "admin";
   password: string;
+  firstLogin:boolean;
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -51,6 +52,10 @@ const userSchema: Schema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    firstLogin: { 
+      type: Boolean, 
+      default: true 
+    }
   },
   { timestamps: true }
 );
